@@ -14,8 +14,6 @@ echo -n "Extracting.. "
 pdfimages um-sayounara-boku-no-majo.pdf majo
 echo "Done."
 
-#exit 1
-
 #
 # SPLIT
 #
