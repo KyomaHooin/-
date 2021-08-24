@@ -4,8 +4,8 @@
 # GET
 #
 
-FILE='um-yokohama-mystery.pdf'
-PREFIX='yokohama'
+FILE='um-hayashi-no-okude.pdf'
+PREFIX='hayashi'
 
 wget -O "$FILE" "https://www.japancenter.cz/upload/files/downloads/$FILE"
 
@@ -25,7 +25,7 @@ INDEX=0
 
 echo -n "Splitting.. " 
 mkdir split/ 2>/dev/null
-for PAGE in {000..026}; do
+for PAGE in {000..041}; do
 	convert -crop 100%x50% "$PREFIX-$PAGE.pbm" "out_%d.pbm"
 	mv "out_0.pbm" "split/$PREFIX-$INDEX.pbm"
 	((INDEX++))
@@ -38,20 +38,17 @@ echo "Done."
 # JOIN
 #
 #  PAGE ORDER: 0 2 3 4 5 6 7 8 9 .. 1
-# PRINT ORDER: 0 55 | 1 54 - 2 53 | 3 52 - 4 51  .. 
+# PRINT ORDER: 0 83 | 1 82 - 2 81 | 3 80 - 4 79  .. 
 #
 
 FIRST=0
-LAST=55
+LAST=83
 PAGE=0
 
 echo -n "Joining.. " 
 mkdir merge/ 2>/dev/null
-mv "split/$PREFIX-53.pbm" "split/$PREFIX-54.pbm" 2>/dev/null #fix back cover..
-cp "split/$PREFIX-1.pbm" "split/$PREFIX-53.pbm" 2>/dev/null #fix back cover..
-cp "split/$PREFIX-1.pbm" "split/$PREFIX-$LAST.pbm" 2>/dev/null #fix back cover..
 
-for ((i=0;i < 14 ;i++)) do
+for ((i=0;i < 21 ;i++)) do
 	mogrify -rotate 180 "split/$PREFIX-$FIRST.pbm"
 	mogrify -rotate 180 "split/$PREFIX-$LAST.pbm"
 	convert -append "split/$PREFIX-$FIRST.pbm" "split/$PREFIX-$LAST.pbm" "merge/$PREFIX-$(printf '%03d' $PAGE).pbm";
