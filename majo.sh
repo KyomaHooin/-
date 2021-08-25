@@ -47,11 +47,11 @@ mkdir merge/ 2>/dev/null
 mv "split/majo-1.pbm" "split/majo-81.pbm" 2>/dev/null #fix back cover..
 for ((i=0;i < 20;i++)) do
 
-	convert -append "split/majo-$FIRST.pbm" "split/majo-$LAST.pbm" "merge/majo-$(printf '%03d' $PAGE).pbm";
+	convert -append "split/majo-$LAST.pbm" "split/majo-$FIRST.pbm" "merge/majo-$(printf '%03d' $PAGE).pbm";
 	((PAGE++))
 	mogrify -rotate 180 "split/majo-$(($FIRST+3)).pbm"
 	mogrify -rotate 180 "split/majo-$(($LAST-3)).pbm"
-	convert -append "split/majo-$(($FIRST+3)).pbm" "split/majo-$(($LAST-3)).pbm" "merge/majo-$(printf '%03d' $PAGE).pbm"; 
+	convert -append "split/majo-$(($LAST-3)).pbm" "split/majo-$(($FIRST+3)).pbm" "merge/majo-$(printf '%03d' $PAGE).pbm"; 
 	((PAGE++))
 
 	FIRST=$(($FIRST+2))

@@ -54,9 +54,9 @@ cp "split/$PREFIX-1.pbm" "split/$PREFIX-$LAST.pbm" 2>/dev/null #fix back cover..
 for ((i=0;i < 14 ;i++)) do
 	mogrify -rotate 180 "split/$PREFIX-$FIRST.pbm"
 	mogrify -rotate 180 "split/$PREFIX-$LAST.pbm"
-	convert -append "split/$PREFIX-$FIRST.pbm" "split/$PREFIX-$LAST.pbm" "merge/$PREFIX-$(printf '%03d' $PAGE).pbm";
+	convert -append "split/$PREFIX-$LAST.pbm" "split/$PREFIX-$FIRST.pbm" "merge/$PREFIX-$(printf '%03d' $PAGE).pbm";
 	((PAGE++))
-	convert -append "split/$PREFIX-$(($FIRST+1)).pbm" "split/$PREFIX-$(($LAST-1)).pbm" "merge/$PREFIX-$(printf '%03d' $PAGE).pbm"; 
+	convert -append "split/$PREFIX-$(($LAST-1)).pbm" "split/$PREFIX-$(($FIRST+1)).pbm" "merge/$PREFIX-$(printf '%03d' $PAGE).pbm"; 
 	((PAGE++))
 
 	FIRST=$(($FIRST+2))
