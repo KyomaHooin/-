@@ -48,12 +48,16 @@ PAGE=0
 echo -n "Joining.. " 
 mkdir merge/ 2>/dev/null
 
+mv "split/$PREFIX-27.pbm" "split/$PREFIX-28.pbm" 2> /dev/null # fix last page order
+mv "split/$PREFIX-26.pbm" "split/$PREFIX-27.pbm" 2> /dev/null # fix last page order
+mv "split/$PREFIX-28.pbm" "split/$PREFIX-26.pbm" 2> /dev/null # fix last page order
+
 for ((i=0;i < 7 ;i++)) do
-	convert -append "split/$PREFIX-$FIRST.pbm" "split/$PREFIX-$LAST.pbm" "merge/$PREFIX-$(printf '%03d' $PAGE).pbm";
+	convert -append "split/$PREFIX-$(($LAST-1)).pbm" "split/$PREFIX-$FIRST.pbm" "merge/$PREFIX-$(printf '%03d' $PAGE).pbm";
 	((PAGE++))
 	mogrify -rotate 180 "split/$PREFIX-$(($FIRST-1)).pbm"
-	mogrify -rotate 180 "split/$PREFIX-$(($LAST-1)).pbm"
-	convert -append "split/$PREFIX-$(($FIRST-1)).pbm" "split/$PREFIX-$(($LAST-1)).pbm" "merge/$PREFIX-$(printf '%03d' $PAGE).pbm"; 
+	mogrify -rotate 180 "split/$PREFIX-$(($LAST)).pbm"
+	convert -append "split/$PREFIX-$(($LAST)).pbm" "split/$PREFIX-$(($FIRST-1)).pbm" "merge/$PREFIX-$(printf '%03d' $PAGE).pbm"; 
 	((PAGE++))
 
 	FIRST=$(($FIRST+2))
@@ -68,4 +72,4 @@ echo "Done."
 echo -n "Converting.. " 
 convert -compress Group4 -density 400 "merge/$PREFIX*.png" fixed.pdf
 echo -n "Done."
- 
+
