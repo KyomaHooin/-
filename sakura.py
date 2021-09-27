@@ -7,19 +7,50 @@ import lxml.html
 
 from io import BytesIO
 
+# PDF Canvas
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib import pagesizes
 from reportlab.lib.utils import ImageReader
 
+# Kanji / Kana
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.cidfonts import UnicodeCIDFont
+
+#
 #INIT
+#
 
-pdf = Canvas('out.pdf', pagesize=pagesizes.landscape(pagesizes.A4))
+#canvas
+pdf = Canvas('ginda.pdf', pagesize=pagesizes.landscape(pagesizes.A4))
+# title
+pdf.setTitle("銀田の事件簿")
+# register font
+pdfmetrics.registerFont(UnicodeCIDFont('HeiseiMin-W3','90ms-RKSJ-V'))# Vetical HeiseiMin-W3
 
-pdf.setTitle("日本")
-pdf.setFont('Helvetica', 10)
-pdf.drawString(50,550,"日本")
-pdf.line(50,545,790,543)
-#pdf.drawImage(ImageReader(img),70,50,700,470)
-pdf.line(50,45,790,43)
-pdf.showPage()
-pdf.save()
+#
+# MAIN
+#
+
+OFFSET_TOP=0
+OFFEST_LINE=0
+
+with open(FILE,'r') as f:
+
+	# HTML parse
+	p = lxml.html.HTMLParser()
+	data = lxml.html.parse(f, p)
+
+	# Gen. data
+	pdf.setFont('HeiseiMin-W3', 16) # 16x16
+	pdf.drawString(50,550,"銀田の事件簿")
+
+	pdf.setFont('HeiseiMin-W3', 8)# 8x8
+	pdf.drawString(65,550,'ぎん')
+	pdf.drawString(65,530,'だ')
+
+	#pdf.drawImage(ImageReader(img),70,50,700,470)
+
+	# write page
+	pdf.showPage()
+	pdf.save()
+
