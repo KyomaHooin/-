@@ -2,10 +2,14 @@
 #
 # Sakura HTML to PDF
 #
+# A4 landscape: 0-
+#
+# TODO: Delete copyright data from Git history.
+#
 
-import lxml.html
+import lxml.html,sys,re
 
-from io import BytesIO
+#from io import BytesIO
 
 # PDF Canvas
 from reportlab.pdfgen.canvas import Canvas
@@ -27,19 +31,19 @@ PDF='ginda.pdf'
 
 TITLE='銀田の事件簿'
 
-OFFSET_TOP=0
-OFFEST_LINE=0
+OFFSET_BOTTOM=0
+OFFSET_LEFT=0
 
 ###########################
 #INIT
 ###########################
 
 #canvas
-#pdf = Canvas(PDF, pagesize=pagesizes.landscape(pagesizes.A4))
+pdf = Canvas(PDF, pagesize=pagesizes.landscape(pagesizes.A4))
 # title
-#pdf.setTitle(TITLE)
+pdf.setTitle(TITLE)
 # register font
-#pdfmetrics.registerFont(UnicodeCIDFont('HeiseiMin-W3','90ms-RKSJ-V'))# Vetical HeiseiMin-W3
+pdfmetrics.registerFont(UnicodeCIDFont('HeiseiMin-W3','90ms-RKSJ-V'))# Vetical HeiseiMin-W3
 
 ###########################
 # MAIN
@@ -52,30 +56,55 @@ with open(FILE,'r') as f:
 	data = lxml.html.parse(f, p)
 
 	for el in data.xpath('./body/*'):
+		#print(el.get('class'))
+		#
+		# IMAGE
 		#
 		# logo..		ZeroDrop _pageBreakAfterAlways 
 		# image ..		FloatCenterImage
 		# footer ..		creditsdiv
+		#
+		# TEXT
+		#
 		# header..		SmallHeader
-		# text..		AlignBottom
+		# text bottom		AlignBottom
+		
 		# text..		FiveDrop
 		# text..		OneDrop
 		# text or break ..	ZeroDrop
 		#
 
-		print(el.get('class'))
+		# LOGO
+		#if el.get('class') == 'ZeroDrop _pageBreakAfterAlways':
+		#	img_path = DATA + '/' + re.sub('.*\/','', el.xpath('./img/@src')[0])
+		#	pdf.drawImage(ImageReader(img_path),0,0,600,600)
 
-	# Gen. data
-	#pdf.setFont('HeiseiMin-W3', 16) # 16x16
-	#pdf.drawString(50,550,"銀田の事件簿")
+		# HEADER
+		#if el.get('class') == 'header':
+		# TEXT
+		if el.get('class') in ['ZeroDrop','OneDrop','FiveDrop']:
+			# break
+			if len(el.xpath('./br')) > 0:
+				OFFSET_LEFT-=16
+			else:
+				rs = 
+				for text in el.itertext():# all text
+					# if not a ruby => print
+					# if ruby => skipt index by 2 + print furigana	
 
-	#pdf.setFont('HeiseiMin-W3', 8)# 8x8
-	#pdf.drawString(65,550,'ぎん')
-	#pdf.drawString(65,530,'だ')
+				OFFSET_LEFT-=16
+		
+		#pdf.setFont('HeiseiMin-W3', 16) # 16x16
+		#pdf.drawString(50,550,"銀田の事件簿")
 
-	#pdf.drawImage(ImageReader(img),70,50,700,470)
+		#pdf.setFont('HeiseiMin-W3', 8)# 8x8
+		#pdf.drawString(65,550,'ぎん')
+		#pdf.drawString(65,530,'だ')
 
-	# write page
-	#pdf.showPage()
-	#pdf.save()
+		#pdf.drawImage(ImageReader(img),70,50,700,470)
+
+		# write page
+	pdf.showPage()
+	# write PDF
+	pdf.save()
 
