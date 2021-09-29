@@ -15,6 +15,9 @@ from reportlab.lib.utils import ImageReader
 # Kanji / Kana
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont
+# Formating
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import Paragraph,Frame
 
 ###########################
 # VAR
@@ -40,6 +43,16 @@ pdf = Canvas(PDF, pagesize=pagesizes.landscape(pagesizes.A4))
 pdf.setTitle(TITLE)
 # register font
 pdfmetrics.registerFont(UnicodeCIDFont('HeiseiMin-W3','90ms-RKSJ-V'))# Vetical HeiseiMin-W3
+# create A5 frame
+frame1 = Frame(20,  20, 380, 555, showBoundary=1)
+frame2 = Frame(440, 20, 380, 555, showBoundary=1)
+#frame1.drawBoundary(pdf)
+#frame2.drawBoundary(pdf)
+# paragraph style
+styles = getSampleStyleSheet()
+style = styles['Normal']
+# text buffer
+story = []
 
 ###########################
 # MAIN
@@ -68,6 +81,9 @@ with open(FILE,'r') as f:
 		#	pdf.drawImage(ImageReader(img_path),0,0,600,600)
 		# HEADER
 		#if el.get('class') == 'header':
+
+		break
+
 		# TEXT
 		if el.get('class') in ['ZeroDrop','OneDrop','FiveDrop']:
 			# break
@@ -91,9 +107,10 @@ with open(FILE,'r') as f:
 						continue
 					if text[i] not in ruby:
 						pdf.setFont('HeiseiMin-W3', 16)
-						pdf.drawString(OFFSET_LEFT, OFFSET_TOP, text[i])
+						#pdf.drawString(OFFSET_LEFT, OFFSET_TOP, text[i])
+						#story.append(Parahraphtext[i])
 						# offset
-						OFFSET_TOP-=16*len(text[i])
+						#OFFSET_TOP-=16*len(text[i])
 					else:
 						pdf.setFont('HeiseiMin-W3', 16)
 						pdf.drawString(OFFSET_LEFT, OFFSET_TOP, text[i])
