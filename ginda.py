@@ -15,9 +15,6 @@ from reportlab.lib.utils import ImageReader
 # Kanji / Kana
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont
-# Formating
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import Paragraph,Frame
 
 ###########################
 # VAR
@@ -31,28 +28,18 @@ TITLE='銀田の事件簿'
 
 # 560x800
 OFFSET_TOP=560
-OFFSET_LEFT=400+400
+OFFSET_LEFT=380
 
 ###########################
 #INIT
 ###########################
 
 #canvas
-pdf = Canvas(PDF, pagesize=pagesizes.landscape(pagesizes.A4))
+pdf = Canvas(PDF, pagesize=pagesizes.A5)
 # title
 pdf.setTitle(TITLE)
 # register font
 pdfmetrics.registerFont(UnicodeCIDFont('HeiseiMin-W3','90ms-RKSJ-V'))# Vetical HeiseiMin-W3
-# create A5 frame
-frame1 = Frame(20,  20, 380, 555, showBoundary=1)
-frame2 = Frame(440, 20, 380, 555, showBoundary=1)
-#frame1.drawBoundary(pdf)
-#frame2.drawBoundary(pdf)
-# paragraph style
-styles = getSampleStyleSheet()
-style = styles['Normal']
-# text buffer
-story = []
 
 ###########################
 # MAIN
@@ -82,8 +69,6 @@ with open(FILE,'r') as f:
 		# HEADER
 		#if el.get('class') == 'header':
 
-		break
-
 		# TEXT
 		if el.get('class') in ['ZeroDrop','OneDrop','FiveDrop']:
 			# break
@@ -96,21 +81,24 @@ with open(FILE,'r') as f:
 				ruby = el.xpath('./ruby/text()')
 				# loop
 				FURI=False
+				LEN=0
 				for i in range(0,len(text)):
-					# text break
-					if OFFSET_TOP < 100:
-						OFFSET_LEFT-=2*16
-						OFFSET_TOP=560
 					# skip furigana
 					if FURI:
 						FURI=False
 						continue
 					if text[i] not in ruby:
-						pdf.setFont('HeiseiMin-W3', 16)
-						#pdf.drawString(OFFSET_LEFT, OFFSET_TOP, text[i])
-						#story.append(Parahraphtext[i])
-						# offset
-						#OFFSET_TOP-=16*len(text[i])
+						for c in text[i]:
+							pdf.setFont('HeiseiMin-W3', 16)
+							pdf.drawString(OFFSET_LEFT, OFFSET_TOP, c)
+							# update len / offset
+							OFFSET_TOP-=16
+							LEN+=16
+							# wrap text
+							if OFFSET_TOP < 50:
+								OFFSET_LEFT-=2*16
+								OFFSET_TOP=560
+		
 					else:
 						pdf.setFont('HeiseiMin-W3', 16)
 						pdf.drawString(OFFSET_LEFT, OFFSET_TOP, text[i])
@@ -120,20 +108,22 @@ with open(FILE,'r') as f:
 						OFFSET_TOP-=16*len(text[i])
 						# furigana
 						FURI=True
-				# line break
+						# wrap text
+						if OFFSET_TOP < 50:
+							OFFSET_LEFT-=2*16
+							OFFSET_TOP=560
+
+				# next line
 				OFFSET_LEFT-=2*16
 				OFFSET_TOP=560
-			# write page
-			if OFFSET_LEFT < 20:
-				pdf.showPage()
-				OFFSET_LEFT=800
-				OFFSET_TOP=560
-				
-	
-		#pdf.drawImage(ImageReader(img),70,50,700,470)
+				# wrap page
+				if OFFSET_LEFT < 70:
+					pdf.showPage()
+					OFFSET_LEFT=380
+					OFFSET_TOP=560
 
-		# write page
+	#pdf.drawImage(ImageReader(img),70,50,700,470)
+	# write page
 	pdf.showPage()
 	# write PDF
 	pdf.save()
-
