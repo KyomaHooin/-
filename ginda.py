@@ -114,9 +114,17 @@ with open(FILE,'r') as f:
 					# kanji as set
 					pdf.setFont('HeiseiMin-W3', 16)
 					pdf.drawString(OFFSET_LEFT, OFFSET_TOP, text[i])
-					# add furtigana ...
+					# add furtigana
 					pdf.setFont('HeiseiMin-W3', 8)
-					pdf.drawString(OFFSET_LEFT+16, OFFSET_TOP, text[i+1])
+					#
+					# furigana offset:
+					#
+					# a] get kanji center offset
+					# b] get furigana half len
+					# c] substract
+					#
+					#pdf.drawString(OFFSET_LEFT+16, OFFSET_TOP, text[i+1])
+					pdf.drawString(OFFSET_LEFT+16, OFFSET_TOP - a] + b] , text[i+1])
 					OFFSET_TOP-=16*len(text[i])
 					FURIGANA=True
 # write page
