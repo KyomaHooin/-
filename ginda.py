@@ -5,8 +5,10 @@
 # A4 landscape: 0-
 #
 # TODO: Delete copyright data from Git history.
+# TODO: scale image to A5 page centered
+# TODO: chapter header
 #
-
+#
 import lxml.html,sys,re
 # PDF Canvas
 from reportlab.pdfgen.canvas import Canvas
@@ -41,17 +43,8 @@ pdfmetrics.registerFont(UnicodeCIDFont('HeiseiMin-W3','90ms-RKSJ-V'))# Vetical H
 # MAIN
 ###########################
 
-# flow loop text
-
 OFFSET_TOP=560
 OFFSET_LEFT=380
-
-# LOGO
-#if el.get('class') == 'ZeroDrop _pageBreakAfterAlways':
-#	img_path = DATA + '/' + re.sub('.*\/','', el.xpath('./img/@src')[0])
-#	pdf.drawImage(ImageReader(img_path),0,0,600,600)
-# HEADER
-#if el.get('class') == 'header':
 
 with open(FILE,'r') as f:
 
@@ -59,15 +52,17 @@ with open(FILE,'r') as f:
 	data = lxml.html.parse(f, p)
 
 	for el in data.xpath('./body/*'):
-		# logo		ZeroDrop _pageBreakAfterAlways 
-		# image		FloatCenterImage
-		# footer	creditsdiv
-		# header	SmallHeader
-		# text bottom	AlignBottom
+	
+		# IMAGE
+
+		#if el.get('class') in ['ZeroDrop _pageBreakAfterAlways', 'FloatCenterImage','creditsdiv']:
+		#
+		#	img_path = DATA + '/' + re.sub('.*\/','', el.xpath('./img/@src')[0])
+		#	pdf.drawImage(ImageReader(img_path),0,0,600,600)
 
 		# TEXT
 
-		if el.get('class') in ['ZeroDrop','OneDrop','FiveDrop']:
+		if el.get('class') in ['SmallHeader,''ZeroDrop','OneDrop','FiveDrop','AlignBottom']:
 			# break
 			if len(el.xpath('./br')) > 0: continue
 			# all text
@@ -119,12 +114,11 @@ with open(FILE,'r') as f:
 					#
 					# furigana offset:
 					#
-					# a] get kanji center offset
+					# a] get kanji center offset len
 					# b] get furigana half len
 					# c] substract
 					#
-					#pdf.drawString(OFFSET_LEFT+16, OFFSET_TOP, text[i+1])
-					pdf.drawString(OFFSET_LEFT+16, OFFSET_TOP - a] + b] , text[i+1])
+					pdf.drawString(OFFSET_LEFT+16, OFFSET_TOP - 8*len(text[i]) + 4*len(text[i+1]) , text[i+1])
 					OFFSET_TOP-=16*len(text[i])
 					FURIGANA=True
 # write page
