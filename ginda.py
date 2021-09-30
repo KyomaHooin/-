@@ -26,10 +26,6 @@ PDF='ginda.pdf'
 
 TITLE='銀田の事件簿'
 
-# 560x800
-OFFSET_TOP=560
-OFFSET_LEFT=380
-
 ###########################
 #INIT
 ###########################
@@ -45,85 +41,86 @@ pdfmetrics.registerFont(UnicodeCIDFont('HeiseiMin-W3','90ms-RKSJ-V'))# Vetical H
 # MAIN
 ###########################
 
+# flow loop text
+
+OFFSET_TOP=560
+OFFSET_LEFT=380
+
+# LOGO
+#if el.get('class') == 'ZeroDrop _pageBreakAfterAlways':
+#	img_path = DATA + '/' + re.sub('.*\/','', el.xpath('./img/@src')[0])
+#	pdf.drawImage(ImageReader(img_path),0,0,600,600)
+# HEADER
+#if el.get('class') == 'header':
+
 with open(FILE,'r') as f:
 
 	p = lxml.html.HTMLParser()
 	data = lxml.html.parse(f, p)
 
 	for el in data.xpath('./body/*'):
-		# IMAGE
-		#
-		# logo..		ZeroDrop _pageBreakAfterAlways 
-		# image ..		FloatCenterImage
-		# footer ..		creditsdiv
-		#
-		# TEXT
-		#
-		# header..		SmallHeader
-		# text bottom		AlignBottom
-		#
-		# LOGO
-		#if el.get('class') == 'ZeroDrop _pageBreakAfterAlways':
-		#	img_path = DATA + '/' + re.sub('.*\/','', el.xpath('./img/@src')[0])
-		#	pdf.drawImage(ImageReader(img_path),0,0,600,600)
-		# HEADER
-		#if el.get('class') == 'header':
+		# logo		ZeroDrop _pageBreakAfterAlways 
+		# image		FloatCenterImage
+		# footer	creditsdiv
+		# header	SmallHeader
+		# text bottom	AlignBottom
 
 		# TEXT
+
 		if el.get('class') in ['ZeroDrop','OneDrop','FiveDrop']:
 			# break
-			if len(el.xpath('./br')) > 0:
-				OFFSET_LEFT-=16
-			else:
-				# text
-				text = [t for t in el.itertext()]
-				# ruby
-				ruby = el.xpath('./ruby/text()')
-				# loop
-				FURI=False
-				LEN=0
-				for i in range(0,len(text)):
-					# skip furigana
-					if FURI:
-						FURI=False
-						continue
-					if text[i] not in ruby:
-						for c in text[i]:
-							pdf.setFont('HeiseiMin-W3', 16)
-							pdf.drawString(OFFSET_LEFT, OFFSET_TOP, c)
-							# update len / offset
-							OFFSET_TOP-=16
-							LEN+=16
-							# wrap text
-							if OFFSET_TOP < 50:
-								OFFSET_LEFT-=2*16
-								OFFSET_TOP=560
-		
-					else:
-						pdf.setFont('HeiseiMin-W3', 16)
-						pdf.drawString(OFFSET_LEFT, OFFSET_TOP, text[i])
-						pdf.setFont('HeiseiMin-W3', 8)
-						pdf.drawString(OFFSET_LEFT+16, OFFSET_TOP, text[i+1])
-						# offset
-						OFFSET_TOP-=16*len(text[i])
-						# furigana
-						FURI=True
-						# wrap text
-						if OFFSET_TOP < 50:
-							OFFSET_LEFT-=2*16
+			if len(el.xpath('./br')) > 0: continue
+			# all text
+			text = [t for t in el.itertext()]
+			# all ruby
+			ruby = el.xpath('./ruby/text()')
+
+			FURIGANA=False
+			LEN=0
+			# loop
+			for i in range(0, len(text)):
+				# furigana
+				if FURIGANA:
+					FURIGANA=False
+					continue
+				# hira/katakana
+				if text[i] not in ruby:
+					# kana char by char
+					for kana in text[i]:
+						# line wrap
+						if OFFSET_TOP < 40:
 							OFFSET_TOP=560
+							OFFSET_LEFT-=2*16
+							# page wrap
+							if OFFSET_LEFT < 20:
+								pdf.showPage()
+								OFFSET_TOP=560
+								OFFSET_LEFT=380
+						# write char
+						pdf.setFont('HeiseiMin-W3', 16)
+						pdf.drawString(OFFSET_LEFT, OFFSET_TOP, kana)
+						OFFSET_TOP-=16
+				# kanji
+				else:
+					#line wrap
+					if OFFSET_TOP < 40:
+						OFFSET_TOP=560
+						OFFSET_LEFT-=2*16
+						# page wrap
+						if OFFSET_LEFT < 20:
+							pdf.showPage()
+							OFFSET_TOP=560
+							OFFSET_LEFT=380
+					# kanji as set
+					pdf.setFont('HeiseiMin-W3', 16)
+					pdf.drawString(OFFSET_LEFT, OFFSET_TOP, text[i])
+					# add furtigana ...
+					pdf.setFont('HeiseiMin-W3', 8)
+					pdf.drawString(OFFSET_LEFT+16, OFFSET_TOP, text[i+1])
+					OFFSET_TOP-=16*len(text[i])
+					FURIGANA=True
+# write page
+pdf.showPage()
+# write PDF
+pdf.save()
 
-				# next line
-				OFFSET_LEFT-=2*16
-				OFFSET_TOP=560
-				# wrap page
-				if OFFSET_LEFT < 70:
-					pdf.showPage()
-					OFFSET_LEFT=380
-					OFFSET_TOP=560
-
-	#pdf.drawImage(ImageReader(img),70,50,700,470)
-	# write page
-	pdf.showPage()
-	# write PDF
-	pdf.save()
