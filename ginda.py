@@ -54,6 +54,9 @@ with open(FILE,'r') as f:
 	pdf.drawImage('sakura/ginda_data/1-1.jpg', 0, 0, 400, 400*1.333125)
 	pdf.showPage()
 
+	# BLANK
+	pdf.showPage()
+
 	for el in data.xpath('./body/*'):
 
 		# TEXT
@@ -129,6 +132,8 @@ pdf.setFont('HeiseiMin-W3', 8)
 for i in range(0,len(str(PAGE))):
 	pdf.drawString(195+i*8, 20, str(PAGE)[i])# page num.
 # write page
+pdf.showPage()
+# BLANK 
 pdf.showPage()
 # FOOT
 # ratio: 1,037667072

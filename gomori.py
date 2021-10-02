@@ -33,6 +33,7 @@ pdf = Canvas(PDF, pagesize=pagesizes.A5)
 pdf.setTitle(TITLE)
 # register font
 pdfmetrics.registerFont(UnicodeCIDFont('HeiseiMin-W3','90ms-RKSJ-V'))# Vetical HeiseiMin-W3
+pdfmetrics.registerFont(UnicodeCIDFont('HeiseiKakuGo-W5','90ms-RKSJ-V'))# Vetical HeiseiMin-W3
 
 ###########################
 # MAIN
@@ -50,7 +51,14 @@ with open(FILE,'r') as f:
 
 	# LOGO
 	# ratio: 1.333333333
-	pdf.drawImage('sakura/gomori_data/7_cover.jpg', 0, 35, 420, 400*1.333333333)
+	#pdf.drawImage('sakura/gomori_data/7_cover.jpg', 0, 35, 420, 400*1.333333333)
+	#pdf.showPage()
+	pdf.setFont('HeiseiKakuGo-W5', 48)
+	pdf.drawString(210, 450,'大つごもり')
+	pdf.setFont('HeiseiKakuGo-W5', 24)
+	pdf.drawString(210+48, 450 - 24 + 12*2 , 'おお')
+	pdf.setFont('HeiseiKakuGo-W5', 16)
+	pdf.drawString(210-48, 400, '■お峰、十八歳の十二月三十一日■')
 	pdf.showPage()
 
 	for el in data.xpath('./body/div[@class="_idGenStoryDirection-1 _idGenObjectStyleOverride-1"]/*'):
