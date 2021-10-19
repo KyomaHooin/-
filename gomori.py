@@ -64,7 +64,7 @@ with open(FILE,'r') as f:
 	for el in data.xpath('./body/div[@class="_idGenStoryDirection-1 _idGenObjectStyleOverride-1"]/*'):
 
 		# TEXT
-		if el.get('class') in ['SmallHeader','ZeroDrop','OneDrop','FiveDrop','TheEnd']:
+		if el.get('class') in ['SmallHeader','ZeroDrop','HalfDrop','NoDrop','OneDrop','FiveDrop','TheEnd']:
 			# break
 			if len(el.xpath('./br')) > 0: continue
 			# all text
