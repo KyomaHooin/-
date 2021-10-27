@@ -53,7 +53,8 @@ with open(FILE,'r') as f:
 	# ratio: 1.333125
 	pdf.drawImage('sakura/onna_soubory/1-1.jpg', 0, 35, 420, 400*1.333125)
 	pdf.showPage()
-
+	# BLANK
+	pdf.showPage()
 	for el in data.xpath('./body/div[@id="_idContainer027"]/*'):
 
 		# TEXT
@@ -131,7 +132,7 @@ for i in range(0,len(str(PAGE))):
 # write page
 pdf.showPage()
 # BLANK
-pdf.showPage()
+#pdf.showPage()
 # FOOT
 # ratio: 1.037667072
 pdf.drawImage('sakura/onna_soubory/colo.jpg', 60, 150, 300*1.037667072, 300) 
