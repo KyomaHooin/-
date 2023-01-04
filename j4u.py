@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# Scrap japanesetest4you.com ..
+# Scrap japanesetest4you.com from Wayaback
 #
 # A4: 595 x 842 PT
 #
@@ -16,15 +16,9 @@ from reportlab.pdfbase.cidfonts import UnicodeCIDFont
 
 # VAR
 
-#NAME='N4_Grammar.pdf'
-#URL='https://japanesetest4you.com/japanese-language-proficiency-test-jlpt-n4-grammar-exercise-'
-#PAGE=31
-#NAME='N4_Vocabulary.pdf'
-#URL='https://japanesetest4you.com/japanese-language-proficiency-test-jlpt-n4-vocabulary-exercise-'
-#PAGE=32
 NAME='N3_Vocabulary.pdf'
 URL='japanesetest4you.com/japanese-language-proficiency-test-jlpt-n3-vocabulary-exercise-'
-PAGE=21
+PAGE=22
 
 API='https://archive.org/wayback/available'
 
@@ -35,35 +29,44 @@ pdf = Canvas(NAME, pagesize=A4)
 
 # MAIN
 
+counter = 0
+offset_top = 822 #842
 session = requests.Session()
-#session.headers.update({'User-Agent' : ''})
 
-for page in range(1,PAGE):
+for page in range(1, PAGE):
+
+	if page == 2: page = '2-2'# N3 vocabulary fix URL
+
+	print('[*] Page ' + str(page))
+	print('[*] Delay: 5s')
 	
-	#if page in [18,19,20]: continue# grammar skip JLPT5 ;)
-	#if page == 8: page = '08'# vocabulary fix URL
-	#if page == 9: page = '09'# vocabulary fix URL
-	if page == 2: page = '2-2'# vocabulary fix URL
-
-
 	time.sleep(5)
 
-	print("Loading wyaback..")
+	print('[*] API request: ' + URL + str(page))
+
+	wayback = None;
 	req = session.post(API, data={'url': URL + str(page)})
 	if req.status_code == 200:
 		res = req.json()
 		if res['results'][0]['archived_snapshots']:
-			WB=res['results'][0]['archived_snapshots']['closest']['url']
+			wayback = res['results'][0]['archived_snapshots']['closest']['url']
+	else:
+		print('[*] API request failed.')
+		continue
+	if wayback:
+		counter += 1
+	else:
+		print('[*] API request empty set.')
+		continue
+
+	print('[*] Scrapping page..')
 	
-	print("Scrapping page: " + str(page))
-	
-	offset_top = 822 #842
 	offset_line = 10
 
 	pdf.setFont('HeiseiMin-W3', 10)# 16
 	pdf.setLineWidth(0.5)
 
-	req = session.get(WB)
+	req = session.get(wayback)
 	if req and req.status_code == 200:
 
 		p = lxml.html.HTMLParser()
@@ -105,22 +108,26 @@ for page in range(1,PAGE):
 				except:
 					pdf.drawString(offset_line,offset_top, ''.join(clean[:-4]))# multi-question not last 4
 				offset_top -= 15
+				offset_line = 20
 				for line in clean[-4:]:# last four
 					pdf.drawString(offset_line, offset_top, str(clean.index(line)) + u'. ' + line)
-					offset_top -= 15
-				offset_top -= 5
-				offset_line = 10
+					offset_line += 10*(2 + len(line))
+			
+				offset_top -= 15
+				offset_line = 10 # reset
 			# Answer
 			if 'Question' in ''.join(val):
 				answer = re.sub('Question [1]?[0-9]:', '', ''.join(val).strip().replace('\n',''))
 				pdf.drawString(offset_line+250, offset_top, answer)
+				offset_top -= 30
 	else:
-		print("Scrap failed.")
+		print('[*] Scrap failed.')
 
-	# write page		
-	pdf.showPage()
-
-	break
+	# write page odd page		
+	if counter % 2 == 0:
+		pdf.showPage()
+		offset_top = 822 #842
+		#break
 
 # write PDF
 pdf.save()
