@@ -6,7 +6,7 @@
 # A4: 595 x 842 PT
 #
 
-import StringIO,requests,lxml.html,sys,re
+import StringIO,requests,lxml.html,json,time,sys,re
 
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.pagesizes import A4
@@ -19,9 +19,14 @@ from reportlab.pdfbase.cidfonts import UnicodeCIDFont
 #NAME='N4_Grammar.pdf'
 #URL='https://japanesetest4you.com/japanese-language-proficiency-test-jlpt-n4-grammar-exercise-'
 #PAGE=31
-NAME='N4_Vocabulary.pdf'
-URL='https://japanesetest4you.com/japanese-language-proficiency-test-jlpt-n4-vocabulary-exercise-'
-PAGE=32
+#NAME='N4_Vocabulary.pdf'
+#URL='https://japanesetest4you.com/japanese-language-proficiency-test-jlpt-n4-vocabulary-exercise-'
+#PAGE=32
+NAME='N3_Vocabulary.pdf'
+URL='japanesetest4you.com/japanese-language-proficiency-test-jlpt-n3-vocabulary-exercise-'
+PAGE=21
+
+API='https://archive.org/wayback/available'
 
 # SETUP
 
@@ -31,24 +36,34 @@ pdf = Canvas(NAME, pagesize=A4)
 # MAIN
 
 session = requests.Session()
-session.headers.update({'User-Agent' : 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0'})
+#session.headers.update({'User-Agent' : ''})
 
 for page in range(1,PAGE):
 	
 	#if page in [18,19,20]: continue# grammar skip JLPT5 ;)
-	if page == 8: page = '08'# vocabulary fix URL
-	if page == 9: page = '09'# vocabulary fix URL
+	#if page == 8: page = '08'# vocabulary fix URL
+	#if page == 9: page = '09'# vocabulary fix URL
+	if page == 2: page = '2-2'# vocabulary fix URL
 
-	print("Scrapping test: " + str(page))
 
+	time.sleep(5)
+
+	print("Loading wyaback..")
+	req = session.post(API, data={'url': URL + str(page)})
+	if req.status_code == 200:
+		res = req.json()
+		if res['results'][0]['archived_snapshots']:
+			WB=res['results'][0]['archived_snapshots']['closest']['url']
+	
+	print("Scrapping page: " + str(page))
+	
 	offset_top = 822 #842
 	offset_line = 10
 
 	pdf.setFont('HeiseiMin-W3', 10)# 16
 	pdf.setLineWidth(0.5)
 
-	req = session.get(URL + str(page))
-
+	req = session.get(WB)
 	if req and req.status_code == 200:
 
 		p = lxml.html.HTMLParser()
@@ -99,9 +114,13 @@ for page in range(1,PAGE):
 			if 'Question' in ''.join(val):
 				answer = re.sub('Question [1]?[0-9]:', '', ''.join(val).strip().replace('\n',''))
 				pdf.drawString(offset_line+250, offset_top, answer)
+	else:
+		print("Scrap failed.")
 
 	# write page		
 	pdf.showPage()
+
+	break
 
 # write PDF
 pdf.save()
