@@ -1,29 +1,55 @@
 #!/usr/bin/python
 
-import StringIO,requests,lxml.html,sys,re
+import StringIO,requests,lxml.html,time,sys,re
 
-URL='https://japanesetest4you.com/japanese-language-proficiency-test-jlpt-n4-listening-exercise-'
+API='https://archive.org/wayback/available'
+URL='https://japanesetest4you.com/japanese-language-proficiency-test-jlpt-n3-listening-exercise-'
+PAGE=22
 
 session = requests.Session()
-session.headers.update({'User-Agent' : 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0'})
+#session.headers.update({'User-Agent' : 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0'})
 
-PAGE=55
+for page in range(1, PAGE + 1):
 
-for page in range(1,PAGE):
+	print('[*] Page ' + str(page))
+	
+	time.sleep(5)
 
-	req = session.get(URL + str(page))
+	print('[*] API request')
 
+	wayback = None;
+	req = session.post(API, data={'url': URL + str(page)})
+
+	if req.status_code == 200:
+		res = req.json()
+		if res['results'][0]['archived_snapshots']:
+			wayback = res['results'][0]['archived_snapshots']['closest']['url']
+	else:
+		print('[*] API request failed.')
+		continue
+	
+	if not wayback:
+                print('[*] API request empty set.')
+                continue
+
+	time.sleep(5)
+
+	print('[*] Wayaback request')
+	req = session.get(wayback)
+	
 	p = lxml.html.HTMLParser()
 	t = lxml.html.parse(StringIO.StringIO(req.text), p)
 
-	data = t.xpath(".//audio//a")
-
+	data = t.xpath(".//audio/a")
 	for a in data:
-		mp3 = a.get("href")
+		mp3 = a.get('href')
 		name = re.sub('.*/','', mp3)
+	
+		time.sleep(5)
+
 		req = session.get(mp3)
-		print("Writing " + name + ' ..' )
+		print('[*] Writing ' + name)
 		with open(re.sub('.*/','', mp3), 'wb') as f: f.write(req.content)
 
 session.close()
-		
+
