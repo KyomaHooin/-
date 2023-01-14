@@ -7,7 +7,7 @@ URL='https://japanesetest4you.com/japanese-language-proficiency-test-jlpt-n3-lis
 PAGE=22
 
 session = requests.Session()
-#session.headers.update({'User-Agent' : 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0'})
+session.headers.update({'User-Agent' : 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0'})
 
 for page in range(1, PAGE + 1):
 
@@ -40,14 +40,16 @@ for page in range(1, PAGE + 1):
 	p = lxml.html.HTMLParser()
 	t = lxml.html.parse(StringIO.StringIO(req.text), p)
 
-	data = t.xpath(".//audio/a")
-	for a in data:
-		mp3 = a.get('href')
+	data = t.xpath(".//audio/a/@href")
+	if not data: data = t.xpath('.//audio/@src')
+
+	for mp3 in data:
 		name = re.sub('.*/','', mp3)
-	
+		url = re.sub('.*(https.*)','\\1', mp3)
+
 		time.sleep(5)
 
-		req = session.get(mp3)
+		req = session.get(url)
 		print('[*] Writing ' + name)
 		with open(re.sub('.*/','', mp3), 'wb') as f: f.write(req.content)
 
