@@ -17,60 +17,63 @@ from reportlab.pdfbase.cidfonts import UnicodeCIDFont
 # VAR
 
 NAME='N3_Vocabulary.pdf'
-URL='japanesetest4you.com/japanese-language-proficiency-test-jlpt-n3-vocabulary-exercise-'
-PAGE=22
-
+URL='https://japanesetest4you.com/japanese-language-proficiency-test-jlpt-n3-vocabulary-exercise-'
 API='https://archive.org/wayback/available'
 
-# SETUP
-
-pdfmetrics.registerFont(UnicodeCIDFont('HeiseiMin-W3'))# 'HeiseiKakuGo-W5'
-pdf = Canvas(NAME, pagesize=A4)
+PAGE=22
 
 # MAIN
 
-counter = 0
-offset_top = 822 #842
-session = requests.Session()
+def download():
 
-for page in range(1, PAGE):
+	session = requests.Session()
 
-	if page == 2: page = '2-2'# N3 vocabulary fix URL
+	for page in range(1, PAGE + 1):
 
-	print('[*] Page ' + str(page))
-	print('[*] Delay: 5s')
-	
-	time.sleep(5)
+		if page == 2: page = '2-2'# N3 vocabulary fix URL
 
-	print('[*] API request: ' + URL + str(page))
+		print('[*] Page ' + str(page))
+		time.sleep(5)
+		print('[*] API request')
 
-	wayback = None;
-	req = session.post(API, data={'url': URL + str(page)})
-	if req.status_code == 200:
-		res = req.json()
-		if res['results'][0]['archived_snapshots']:
-			wayback = res['results'][0]['archived_snapshots']['closest']['url']
-	else:
-		print('[*] API request failed.')
-		continue
-	if wayback:
-		counter += 1
-	else:
-		print('[*] API request empty set.')
-		continue
+		wayback = None;
+		req = session.post(API, data={'url': URL + str(page)})
+		if req.status_code == 200:
+			res = req.json()
+			if res['results'][0]['archived_snapshots']:
+				wayback = res['results'][0]['archived_snapshots']['closest']['url']
+		else:
+			print('[*] API request failed')
+			continue
+		if not wayback:
+			print('[*] API request empty set')
+			continue
 
-	print('[*] Scrapping page..')
-	
-	offset_line = 10
+		print('[*] Wayback request')
+		req = session.get(wayback)
+		print('[*] Writing page')
 
+		with open(str(page) + '.html', 'wb') as f: f.write(req.text.encode('utf-8'))
+
+def get_pdf():
+
+	pdfmetrics.registerFont(UnicodeCIDFont('HeiseiMin-W3'))# 'HeiseiKakuGo-W5'
+	pdf = Canvas(NAME, pagesize=A4)
 	pdf.setFont('HeiseiMin-W3', 10)# 16
 	pdf.setLineWidth(0.5)
 
-	req = session.get(wayback)
-	if req and req.status_code == 200:
+	offset_top = 822
+	offset_line = 11
+
+	for page in range(1, PAGE + 1):
+
+		try:
+			f = open(str(page) + '.html', 'r')
+		except:
+			continue
 
 		p = lxml.html.HTMLParser()
-		t = lxml.html.parse(StringIO.StringIO(req.text), p)
+		t = lxml.html.parse(f, p)
 
 		# GRAMMAR
 		#data = t.xpath(".//div[@class='entry clearfix']//p")
@@ -107,32 +110,25 @@ for page in range(1, PAGE):
 					QUESTION+=1
 				except:
 					pdf.drawString(offset_line,offset_top, ''.join(clean[:-4]))# multi-question not last 4
-				offset_top -= 15
+				offset_top -= 17
 				offset_line = 20
 				for line in clean[-4:]:# last four
 					pdf.drawString(offset_line, offset_top, str(clean.index(line)) + u'. ' + line)
 					offset_line += 10*(2 + len(line))
 			
-				offset_top -= 15
+				offset_top -= 17
 				offset_line = 10 # reset
 			# Answer
 			if 'Question' in ''.join(val):
 				answer = re.sub('Question [1]?[0-9]:', '', ''.join(val).strip().replace('\n',''))
 				pdf.drawString(offset_line+250, offset_top, answer)
 				offset_top -= 30
-	else:
-		print('[*] Scrap failed.')
 
-	# write page odd page		
-	if counter % 2 == 0:
-		pdf.showPage()
-		offset_top = 822 #842
+		#pdf.showPage()
+		#offset_top = 822 #842
 		#break
 
-# write PDF
-pdf.save()
+	pdf.save()
 
-# EXIT
-
-sys.exit(0)
+get_pdf()
 
