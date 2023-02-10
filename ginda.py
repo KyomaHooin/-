@@ -18,11 +18,11 @@ from reportlab.pdfbase.cidfonts import UnicodeCIDFont
 # VAR
 ###########################
 
-FILE='sakura/ginda.html'
-DATA='sakura/ginda_data'
+FILE='ginda2.html'
+DATA='ginda2_data'
 PDF='ginda.pdf'
 
-TITLE='銀田の事件簿'
+TITLE='銀田の事件簿２'
 
 ###########################
 #INIT
@@ -51,16 +51,16 @@ with open(FILE,'r') as f:
 
 	# LOGO
 	# ratio: 1.333125
-	pdf.drawImage('sakura/ginda_data/1-1.jpg', 0, 0, 400, 400*1.333125)
+	pdf.drawImage('ginda2_data/6_cover.jpg', 10, 30, 400, 400*1.333333)
 	pdf.showPage()
 
 	# BLANK
 	pdf.showPage()
 
-	for el in data.xpath('./body/*'):
-
+	#for el in data.xpath('./body/*'):
+	for el in  data.xpath('./body/div[@id="_idContainer001"]/div[@class="People"]/*') + data.xpath('./body/div[@id="_idContainer001"]/*'):
 		# TEXT
-		if el.get('class') in ['SmallHeader','ZeroDrop','OneDrop','FiveDrop','AlignBottom']:
+		if el.get('class') in ['SmallHeader','NoDrop','HalfDrop','OneDrop','ThreeDrop','TheEnd']:
 			# break
 			if len(el.xpath('./br')) > 0: continue
 			# all text
@@ -137,7 +137,7 @@ pdf.showPage()
 pdf.showPage()
 # FOOT
 # ratio: 1,037667072
-pdf.drawImage('sakura/ginda_data/colo.jpg', 60, 150, 300*1.037667072, 300) 
+pdf.drawImage('ginda2_data/colo6.jpg', 60, 150, 300*1.037974684, 300) 
 pdf.showPage()
 
 # write PDF
